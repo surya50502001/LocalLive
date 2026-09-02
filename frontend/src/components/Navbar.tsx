@@ -11,38 +11,37 @@ export function Navbar() {
     navigate("/login");
   };
   return (
-    <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/90 backdrop-blur-md text-gray-900">
+    <header className="sticky top-0 z-30 border-b border-white/5 bg-[#090d16]/95 backdrop-blur-md text-slate-100 shadow-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
         <Link to="/" className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600 text-sm font-bold text-white shadow-lg shadow-red-600/30">LL</span>
-          <span className="text-base font-extrabold tracking-tight">LocalLive</span>
-          <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-0.5 text-[10px] font-extrabold tracking-widest text-white shadow-sm shadow-red-500/50 animate-pulse">
-            <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" /> POOL
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl mini-button-primary text-xs font-black text-white">LL</span>
+          <span className="text-base font-extrabold tracking-tight text-white">LocalLive</span>
+          <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-slate-900 border border-rose-500/30 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-rose-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" /> POOL
           </span>
         </Link>
-        <nav className="flex items-center gap-2 text-sm font-medium">
+        <nav className="flex items-center gap-2 text-sm font-semibold">
           {!isAuthenticated ? (
             <>
-              <Link to="/login" className="rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">Log in</Link>
-              <Link to="/register" className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-500 shadow-md shadow-red-600/20 transition">Sign up</Link>
+              <Link to="/login" className="mini-button-secondary px-3 py-1.5 text-xs text-slate-200 hover:text-white">Log in</Link>
+              <Link to="/register" className="mini-button-primary px-4 py-1.5 text-xs text-white">Sign up</Link>
             </>
           ) : role === "Admin" ? (
             <>
-              <Link to="/admin" className="rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">Admin</Link>
-              <button onClick={handleLogout} className="rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">Log out</button>
-              <span className="hidden sm:inline text-xs text-gray-400">{user?.email}</span>
+              <Link to="/admin" className="mini-button-secondary px-3 py-1.5 text-xs text-slate-200">Admin</Link>
+              <button onClick={handleLogout} className="mini-button-secondary px-3 py-1.5 text-xs text-slate-300">Log out</button>
+              <span className="hidden sm:inline text-xs font-mono text-slate-400">{user?.email}</span>
             </>
           ) : role === "ShopOwner" ? (
             <>
-              <Link to="/shop" className="rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">Dashboard</Link>
-              <Link to="/shop/requests" className="rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">Live Stream</Link>
-              <button onClick={handleLogout} className="rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">Log out</button>
+              <Link to="/shop" className="mini-button-secondary px-3 py-1.5 text-xs text-slate-200">Dashboard</Link>
+              <Link to="/shop/requests" className="mini-button-secondary px-3 py-1.5 text-xs text-slate-200">Live Stream</Link>
+              <button onClick={handleLogout} className="mini-button-secondary px-3 py-1.5 text-xs text-slate-300">Log out</button>
             </>
           ) : (
             <>
-              <Link to="/customer" className="rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">Live Pool ⚡</Link>
-              <Link to="/customer/requests" className="rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">My Requests</Link>
-              <button onClick={handleLogout} className="rounded-lg px-3 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">Log out</button>
+              <Link to="/customer" className="mini-button-primary px-3.5 py-1.5 text-xs text-white">Live Stream ⚡</Link>
+              <button onClick={handleLogout} className="mini-button-secondary px-3 py-1.5 text-xs text-slate-300">Log out</button>
             </>
           )}
         </nav>

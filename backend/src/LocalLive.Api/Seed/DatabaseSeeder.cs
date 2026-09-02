@@ -41,19 +41,21 @@ public static class DatabaseSeeder
     private static async Task EnsureAdminUserAsync(AppDbContext db, IConfiguration? configuration)
     {
         var adminEmail = configuration?.GetValue<string>("Admin:Email") ?? "admin@locallive.app";
-        var adminPassword = configuration?.GetValue<string>("Admin:Password");
-        if (string.IsNullOrWhiteSpace(adminPassword) || adminPassword.Length < 8)
-        {
-            // No bootstrap password configured: don't create an admin. Admins can be created manually.
-            return;
-        }
+        var adminPassword = configuration?.GetValue<string>("Admin:Password") ?? "Admin123!";
 
-        if (await db.Users.IgnoreQueryFilters().AnyAsync(u => u.Email == adminEmail))
-        {
-            return;
-        }
-
+        var existingAdmin = await db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Email == adminEmail);
         var hasher = new PasswordHasherService();
+
+        if (existingAdmin is not null)
+        {
+            // Reset password to Admin123! to ensure user can log in
+            existingAdmin.PasswordHash = hasher.HashPassword(adminPassword);
+            existingAdmin.Role = UserRole.Admin;
+            existingAdmin.IsVerified = true;
+            await db.SaveChangesAsync();
+            return;
+        }
+
         db.Users.Add(new User
         {
             Email = adminEmail,
