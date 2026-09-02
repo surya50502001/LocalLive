@@ -230,294 +230,275 @@ export default function CustomerHome() {
 
   return (
     <PageShell>
-      <div className="mx-auto max-w-4xl space-y-4 py-2">
+      <div className="mx-auto max-w-3xl flex flex-col h-[85vh] py-2">
         
-        {/* MINIMALIST LIVE STREAM CONTAINER */}
-        <div className="mini-card flex flex-col h-[82vh] overflow-hidden relative p-4 space-y-3">
-          
-          {/* MINIMALIST HEADER */}
-          <div className="flex items-center justify-between px-3 py-2 border-b border-white/5">
-            <div className="flex items-center gap-3">
-              <span className="flex h-2.5 w-2.5 rounded-full bg-rose-500 animate-pulse" />
-              <div>
-                <h1 className="text-base font-extrabold text-white tracking-tight flex items-center gap-2">
-                  <span>LIVE POOL STREAM</span>
-                  <span className="text-[10px] font-mono text-rose-400 bg-rose-950/60 border border-rose-500/30 px-2 py-0.5 rounded-full">
-                    REALTIME ⚡
-                  </span>
-                </h1>
-                <p className="text-[11px] text-slate-400 font-mono">
-                  Single live stream for requests, shop responses, and Google Maps pins.
-                </p>
-              </div>
+        {/* SEAMLESS BORDERLESS HEADER */}
+        <div className="flex items-center justify-between py-3 px-1 border-b border-white/10 mb-2">
+          <div className="flex items-center gap-3">
+            <span className="flex h-2.5 w-2.5 rounded-full bg-rose-500 animate-pulse" />
+            <div>
+              <h1 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                <span>Live Pool Stream</span>
+                <span className="text-[10px] font-mono text-rose-400 bg-rose-950/40 px-2 py-0.5 rounded-full border border-rose-500/20">
+                  REALTIME
+                </span>
+              </h1>
+              <p className="text-[11px] text-slate-400">
+                Continuous minimal stream • Requests & responses render inline.
+              </p>
             </div>
-
-            <button
-              onClick={fetchLivePool}
-              className="mini-button-secondary px-3 py-1 text-xs cursor-pointer"
-            >
-              🔄 Refresh
-            </button>
           </div>
 
-          {/* STREAM BODY (MESSAGES SCROLL AREA) */}
-          <div className="mini-screen flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
-            
-            {loadingPool ? (
-              <div className="flex flex-col items-center justify-center h-full text-slate-400 space-y-2">
-                <Spinner />
-                <p className="text-xs font-mono">Loading Stream...</p>
-              </div>
-            ) : myRequests.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center p-8 space-y-2 text-slate-400">
-                <div className="text-4xl">⚡</div>
-                <p className="text-base font-bold text-white">Live Stream Active</p>
-                <p className="text-xs max-w-xs text-slate-400">
-                  Type your request in the bar below to send it live into the stream!
-                </p>
-              </div>
-            ) : (
-              myRequests.map((req) => {
-                const availableShops = req.availableShops || [];
-                const sugs = communitySuggestions[req.id] || [];
-                const isFulfilled = req.status === "fulfilled";
-                const isExpired = req.status === "expired";
+          <button
+            onClick={fetchLivePool}
+            className="text-xs font-semibold text-slate-400 hover:text-white transition px-2 py-1"
+          >
+            🔄 Refresh
+          </button>
+        </div>
 
-                return (
-                  <div key={req.id} className="space-y-3">
-                    
-                    {/* REQUEST CARD BUBBLE */}
-                    <div className="flex items-start gap-3">
-                      <div className="h-8 w-8 rounded-xl bg-rose-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-md">
-                        ⚡
+        {/* SEAMLESS STREAM STREAM AREA (NO BULKY CARDS) */}
+        <div className="flex-1 overflow-y-auto px-1 py-3 space-y-6">
+          
+          {loadingPool ? (
+            <div className="flex flex-col items-center justify-center h-full text-slate-400 space-y-2">
+              <Spinner />
+              <p className="text-xs font-mono">Loading stream...</p>
+            </div>
+          ) : myRequests.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center p-8 space-y-2 text-slate-400">
+              <div className="text-3xl">💬</div>
+              <p className="text-sm font-semibold text-slate-200">No active requests in stream</p>
+              <p className="text-xs max-w-xs text-slate-400">
+                Type your request in the composer below to publish into the stream.
+              </p>
+            </div>
+          ) : (
+            myRequests.map((req) => {
+              const availableShops = req.availableShops || [];
+              const sugs = communitySuggestions[req.id] || [];
+              const isFulfilled = req.status === "fulfilled";
+              const isExpired = req.status === "expired";
+
+              return (
+                <div key={req.id} className="space-y-3 pb-4 border-b border-white/5">
+                  
+                  {/* CLEAN MINIMALIST USER REQUEST */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-rose-400">Customer Request</span>
+                        <span className="text-[10px] text-slate-400 bg-slate-800/60 px-2 py-0.5 rounded-md">
+                          {req.categoryName}
+                        </span>
                       </div>
-
-                      <div className="flex-1 mini-bubble p-4 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-rose-400">YOU (CUSTOMER)</span>
-                            <span className="text-[10px] font-medium text-slate-300 bg-slate-800 border border-slate-700 px-2 py-0.5 rounded-full">
-                              {req.categoryName}
-                            </span>
-                          </div>
-                          <span className="text-[11px] font-mono text-slate-400">
-                            ⏱️ {formatCountdown(req.expiresAt)}
-                          </span>
-                        </div>
-
-                        <p className="text-base font-bold text-white leading-relaxed">
-                          {req.title}
-                        </p>
-
-                        <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 pt-1 border-t border-white/5">
-                          <span>Notified {req.notifiedShopsCount} open shops</span>
-                          {isFulfilled ? (
-                            <span className="text-emerald-400 font-bold">✓ Fulfilled</span>
-                          ) : isExpired ? (
-                            <span className="text-slate-500">Expired</span>
-                          ) : (
-                            <span className="text-rose-400 font-bold animate-pulse">● Active</span>
-                          )}
-                        </div>
-
-                        {/* INLINE SHOP RESPONSES & COMMUNITY SUGGESTIONS */}
-                        <div className="pt-2 space-y-2.5">
-                          
-                          {/* Official Shop Responses */}
-                          {availableShops.map((shop, i) => (
-                            <div
-                              key={i}
-                              className="rounded-xl bg-emerald-950/40 border border-emerald-500/40 p-3 space-y-2"
-                            >
-                              <div className="flex items-center justify-between text-xs">
-                                <div className="font-bold text-emerald-200 flex items-center gap-2">
-                                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                                  <span>🏬 {shop.shopName}</span>
-                                  <span className="rounded bg-emerald-500 text-black px-1.5 py-0.2 text-[9px] font-bold">
-                                    AVAILABLE
-                                  </span>
-                                </div>
-                                <span className="text-emerald-400 font-mono font-bold">
-                                  {shop.distanceM ? `${Math.round(shop.distanceM)}m away` : "Nearby"}
-                                </span>
-                              </div>
-
-                              <p className="text-xs text-emerald-300/80 font-mono">{shop.address} · 📞 {shop.phone}</p>
-
-                              <a
-                                href={shop.navigationUrl ?? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(shop.address)}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-500 transition shadow"
-                              >
-                                <span>GO THERE — Navigate</span>
-                                <span>➔</span>
-                              </a>
-                            </div>
-                          ))}
-
-                          {/* Community Suggestions */}
-                          {sugs.map((sug) => (
-                            <div
-                              key={sug.id}
-                              className="rounded-xl bg-amber-950/30 border border-amber-500/30 p-3 space-y-2 text-xs"
-                            >
-                              <div className="flex items-start justify-between gap-2">
-                                <div>
-                                  <div className="font-bold text-amber-200 flex items-center gap-1.5">
-                                    <span>💡 {sug.userName}: Suggested &quot;{sug.placeName}&quot;</span>
-                                  </div>
-                                  {sug.note && <p className="text-[11px] text-amber-100/90 italic mt-0.5">“{sug.note}”</p>}
-                                </div>
-
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpvote(sug.id, req.id)}
-                                  className="mini-button-secondary px-2 py-0.5 text-[10px] cursor-pointer"
-                                >
-                                  👍 {sug.upvotes}
-                                </button>
-                              </div>
-
-                              <a
-                                href={sug.googleMapsUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 border border-amber-500/40 px-3 py-1.5 text-[11px] font-bold text-amber-300 hover:bg-amber-500 hover:text-black transition"
-                              >
-                                <span>🗺️ Open Google Maps Marker</span>
-                                <span>➔</span>
-                              </a>
-                            </div>
-                          ))}
-
-                          {/* Action: Add Inline Suggestion */}
-                          {suggestingReqId === req.id ? (
-                            <form onSubmit={(e) => handleAddInlineSuggestion(req.id, e)} className="p-3 bg-slate-900/90 rounded-xl border border-amber-500/40 space-y-2">
-                              <input
-                                type="text"
-                                value={inlinePlaceName}
-                                onChange={(e) => setInlinePlaceName(e.target.value)}
-                                placeholder="Place / Shop name..."
-                                required
-                                className="w-full mini-input px-3 py-1.5 text-xs font-medium"
-                              />
-                              <input
-                                type="text"
-                                value={inlineNote}
-                                onChange={(e) => setInlineNote(e.target.value)}
-                                placeholder="Note (optional)..."
-                                className="w-full mini-input px-3 py-1.5 text-xs font-medium"
-                              />
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => setSuggestingReqId(null)}
-                                  className="w-full py-1 text-xs text-slate-400 hover:text-white"
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  type="submit"
-                                  className="w-full py-1 rounded-lg bg-amber-500 text-black font-extrabold text-xs"
-                                >
-                                  Post Pin 🗺️
-                                </button>
-                              </div>
-                            </form>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => setSuggestingReqId(req.id)}
-                              className="text-[11px] font-bold text-amber-400 hover:underline flex items-center gap-1 cursor-pointer pt-1"
-                            >
-                              <span>+ Suggest a place pin for this request</span>
-                            </button>
-                          )}
-
-                        </div>
-                      </div>
+                      <span className="text-[11px] font-mono text-slate-400">
+                        ⏱️ {formatCountdown(req.expiresAt)}
+                      </span>
                     </div>
 
-                  </div>
-                );
-              })
-            )}
+                    <p className="text-base font-semibold text-white leading-relaxed">
+                      {req.title}
+                    </p>
 
-            <div ref={chatEndRef} />
+                    <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+                      <span>Notified {req.notifiedShopsCount} open shops</span>
+                      {isFulfilled ? (
+                        <span className="text-emerald-400 font-bold">✓ Fulfilled</span>
+                      ) : isExpired ? (
+                        <span className="text-slate-500">Expired</span>
+                      ) : (
+                        <span className="text-rose-400 font-bold animate-pulse">● Active</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* INLINE SHOP RESPONSES & PLACE SUGGESTIONS */}
+                  {(availableShops.length > 0 || sugs.length > 0 || suggestingReqId === req.id) && (
+                    <div className="pl-3 border-l-2 border-slate-700/60 space-y-2 pt-1">
+                      
+                      {/* Shop Responses */}
+                      {availableShops.map((shop, i) => (
+                        <div key={i} className="py-1.5 space-y-1 text-xs">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-emerald-300 flex items-center gap-1.5">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                              🏬 {shop.shopName}
+                              <span className="text-[10px] text-emerald-400 bg-emerald-950/60 px-1.5 py-0.2 rounded font-bold">
+                                AVAILABLE
+                              </span>
+                            </span>
+                            <span className="font-mono text-emerald-400 text-[11px]">
+                              {shop.distanceM ? `${Math.round(shop.distanceM)}m away` : "Nearby"}
+                            </span>
+                          </div>
+                          <p className="text-slate-400 text-[11px] font-mono">{shop.address} · 📞 {shop.phone}</p>
+                          <a
+                            href={shop.navigationUrl ?? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(shop.address)}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 hover:underline pt-0.5"
+                          >
+                            <span>Navigate on Google Maps</span>
+                            <span>➔</span>
+                          </a>
+                        </div>
+                      ))}
+
+                      {/* Community Place Pin Suggestions */}
+                      {sugs.map((sug) => (
+                        <div key={sug.id} className="py-1.5 space-y-1 text-xs">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-amber-300">
+                              💡 {sug.userName}: Suggested &quot;{sug.placeName}&quot;
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleUpvote(sug.id, req.id)}
+                              className="text-[10px] text-slate-400 hover:text-white transition"
+                            >
+                              👍 {sug.upvotes}
+                            </button>
+                          </div>
+                          {sug.note && <p className="text-[11px] text-slate-400 italic">“{sug.note}”</p>}
+                          <a
+                            href={sug.googleMapsUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-400 hover:underline pt-0.5"
+                          >
+                            <span>Open Google Maps Pin</span>
+                            <span>➔</span>
+                          </a>
+                        </div>
+                      ))}
+
+                      {/* Suggest Pin Form */}
+                      {suggestingReqId === req.id ? (
+                        <form onSubmit={(e) => handleAddInlineSuggestion(req.id, e)} className="pt-2 space-y-2">
+                          <input
+                            type="text"
+                            value={inlinePlaceName}
+                            onChange={(e) => setInlinePlaceName(e.target.value)}
+                            placeholder="Place or shop name..."
+                            required
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white"
+                          />
+                          <input
+                            type="text"
+                            value={inlineNote}
+                            onChange={(e) => setInlineNote(e.target.value)}
+                            placeholder="Note (optional)..."
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setSuggestingReqId(null)}
+                              className="text-xs text-slate-400 hover:text-white"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              className="text-xs font-bold text-amber-400 hover:underline"
+                            >
+                              Post Pin 🗺️
+                            </button>
+                          </div>
+                        </form>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setSuggestingReqId(req.id)}
+                          className="text-[11px] font-medium text-slate-400 hover:text-amber-300 transition pt-1 cursor-pointer"
+                        >
+                          + Suggest a place pin
+                        </button>
+                      )}
+
+                    </div>
+                  )}
+
+                </div>
+              );
+            })
+          )}
+
+          <div ref={chatEndRef} />
+        </div>
+
+        {/* MINIMALIST BOTTOM COMPOSER BAR (NO BULKY CARD) */}
+        <div className="pt-3 border-t border-white/10 space-y-2.5">
+          
+          {/* Preset Buttons */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex-shrink-0">Presets:</span>
+            {PRESETS.map((p, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => handlePresetClick(p)}
+                className="text-[11px] font-medium text-slate-300 bg-slate-800/80 hover:bg-slate-700 rounded-lg px-2.5 py-1 flex-shrink-0 flex items-center gap-1 transition cursor-pointer"
+              >
+                <span>{p.icon}</span>
+                <span>{p.text}</span>
+              </button>
+            ))}
           </div>
 
-          {/* MINIMALIST BOTTOM COMPOSER BAR */}
-          <div className="p-2 space-y-2 border-t border-white/5">
-            
-            {/* Quick Presets */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex-shrink-0">Presets:</span>
-              {PRESETS.map((p, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handlePresetClick(p)}
-                  className="mini-button-secondary px-2.5 py-1 text-[11px] flex-shrink-0 flex items-center gap-1 cursor-pointer"
-                >
-                  <span>{p.icon}</span>
-                  <span>{p.text}</span>
-                </button>
-              ))}
+          {/* Category Chips & Input Line */}
+          <form onSubmit={handleSendRequest} className="space-y-2">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {categories.map((cat) => {
+                const isSelected = selectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition cursor-pointer ${
+                      isSelected
+                        ? "bg-rose-600 text-white"
+                        : "bg-slate-800/60 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    {cat.icon ? `${cat.icon} ` : ""}{cat.name}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Main Input & Category Pills */}
-            <form onSubmit={handleSendRequest} className="space-y-2">
-              <div className="flex flex-wrap items-center gap-1.5">
-                {categories.map((cat) => {
-                  const isSelected = selectedCategory === cat.id;
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => setSelectedCategory(cat.id)}
-                      className={`mini-pill px-2.5 py-1 text-[11px] font-bold cursor-pointer ${
-                        isSelected ? "active" : ""
-                      }`}
-                    >
-                      {cat.icon ? `${cat.icon} ` : ""}{cat.name}
-                    </button>
-                  );
-                })}
-              </div>
+            <div className="flex items-center gap-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder="Type your live request... e.g. Black shirt size L"
+                className="w-full bg-slate-900/90 border border-slate-700/80 focus:border-rose-500 rounded-xl px-4 py-2.5 text-sm font-medium text-white placeholder-slate-500 outline-none transition"
+                maxLength={200}
+                disabled={publishing}
+              />
 
-              <div className="flex items-center gap-2">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  placeholder="Type your live request... e.g. Black shirt size L"
-                  className="w-full mini-input px-4 py-3 text-sm font-medium text-white placeholder-slate-400"
-                  maxLength={200}
-                  disabled={publishing}
-                />
+              <button
+                type="submit"
+                disabled={publishing}
+                className="bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-xs px-5 h-[42px] rounded-xl transition flex items-center gap-1 flex-shrink-0 cursor-pointer disabled:opacity-50"
+              >
+                {publishing ? (
+                  <Spinner />
+                ) : (
+                  <>
+                    <span>Send</span>
+                    <span>⚡</span>
+                  </>
+                )}
+              </button>
+            </div>
 
-                <button
-                  type="submit"
-                  disabled={publishing}
-                  className="mini-button-primary px-6 h-[46px] text-sm flex items-center gap-1.5 flex-shrink-0 cursor-pointer disabled:opacity-50"
-                >
-                  {publishing ? (
-                    <Spinner />
-                  ) : (
-                    <>
-                      <span>Send</span>
-                      <span>⚡</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {err && <div className="text-xs text-rose-400 font-bold px-1">{err}</div>}
-            </form>
-
-          </div>
+            {err && <div className="text-xs text-rose-400 font-medium px-1">{err}</div>}
+          </form>
 
         </div>
 
