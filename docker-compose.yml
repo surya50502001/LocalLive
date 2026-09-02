@@ -1,0 +1,58 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: locallive-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-locallive}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-locallive_dev}
+      POSTGRES_DB: ${DB_NAME:-locallive}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-locallive} -d ${DB_NAME:-locallive}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: locallive-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${DB_NAME:-locallive};Username=${DB_USER:-locallive};Password=${DB_PASSWORD:-locallive_dev}
+      Jwt__Issuer: ${JWT_ISSUER:-LocalLive}
+      Jwt__Audience: ${JWT_AUDIENCE:-LocalliveClient}
+      Jwt__Key: ${JWT_KEY:?JWT_KEY must be set}
+      Cors__AllowedOrigins__0: ${WEB_ORIGIN:-http://localhost}
+      Navigation__Provider: ${NAVIGATION_PROVIDER:-google_maps}
+      ApplyMigrationsOnStartup: "true"
+      SeedData: "true"
+      SeedDemoData: "${SEED_DEMO_DATA:-false}"
+      Admin__Email: ${ADMIN_EMAIL:-admin@locallive.app}
+      Admin__Password: ${ADMIN_PASSWORD:-}
+    ports:
+      - "${API_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: locallive-web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-80}:80"
+    depends_on:
+      - api
+
+volumes:
+  db_data:
