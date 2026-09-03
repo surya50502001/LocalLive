@@ -22,7 +22,15 @@ export default function ShopRequests() {
       setItems(reqs);
       if (s) setShop(s as ShopDto);
     } catch (ex: unknown) {
-      setErr((ex as { detail?: string })?.detail ?? "Failed to load requests.");
+      console.error("[ShopRequests error]", ex);
+      const e = ex as { detail?: string; title?: string; status?: number };
+      if (e.status === 403) {
+        setErr("Access forbidden (403): Your account role cannot view shop requests. Please log in with a Shop Owner account.");
+      } else if (e.status === 401) {
+        setErr("Session expired (401). Please log in again.");
+      } else {
+        setErr(e.detail ?? e.title ?? "Failed to load requests.");
+      }
     }
   }, []);
 

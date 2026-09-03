@@ -21,7 +21,7 @@ public class RequestsController : ApiControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Customer")]
+    [Authorize(Roles = "Customer,Admin")]
     [EnableRateLimiting("request-create")]
     public async Task<IActionResult> Create([FromBody] CreateRequestRequest request)
     {
@@ -41,27 +41,27 @@ public class RequestsController : ApiControllerBase
     }
 
     [HttpPost("{id:guid}/cancel")]
-    [Authorize(Roles = "Customer")]
+    [Authorize(Roles = "Customer,Admin")]
     public async Task<IActionResult> Cancel(Guid id)
         => HandleResult(await _service.CancelAsync(RequireUserId(), id));
 
     [HttpPost("{id:guid}/fulfill")]
-    [Authorize(Roles = "Customer")]
+    [Authorize(Roles = "Customer,Admin")]
     public async Task<IActionResult> Fulfill(Guid id)
         => HandleResult(await _service.FulfillAsync(RequireUserId(), id));
 
     [HttpPost("{id:guid}/available")]
-    [Authorize(Roles = "ShopOwner")]
+    [Authorize(Roles = "ShopOwner,Admin")]
     public async Task<IActionResult> Available(Guid id, [FromBody] AvailableRequest? request)
         => HandleResult(await _service.AvailableAsync(RequireUserId(), id, request?.Message));
 
     [HttpGet("my/live")]
-    [Authorize(Roles = "Customer")]
+    [Authorize(Roles = "Customer,Admin")]
     public async Task<IActionResult> MyLive()
         => Ok(await _service.GetMyLiveRequestsAsync(RequireUserId()));
 
     [HttpGet("shop/live")]
-    [Authorize(Roles = "ShopOwner")]
+    [Authorize(Roles = "ShopOwner,Admin")]
     public async Task<IActionResult> ShopLive()
         => Ok(await _service.GetShopLiveRequestsAsync(RequireUserId()));
 }

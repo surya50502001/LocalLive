@@ -11,7 +11,17 @@ export default function MyRequests() {
   useEffect(() => {
     apiFetch<RequestDto[]>("/api/requests/my/live")
       .then(setItems)
-      .catch((ex: unknown) => setErr((ex as { detail?: string })?.detail ?? "Failed to load requests."));
+      .catch((ex: unknown) => {
+        console.error("[MyRequests error]", ex);
+        const e = ex as { detail?: string; title?: string; status?: number };
+        if (e.status === 403) {
+          setErr("Access forbidden (403): Your account role cannot view customer requests. Please log in with a Customer account.");
+        } else if (e.status === 401) {
+          setErr("Session expired (401). Please log in again.");
+        } else {
+          setErr(e.detail ?? e.title ?? "Failed to load requests.");
+        }
+      });
   }, []);
   if (err) return <PageShell><Card><p className="text-sm text-red-600">{err}</p></Card></PageShell>;
   if (items === null) return <PageShell><div className="flex justify-center py-16"><Spinner /></div></PageShell>;
