@@ -32,9 +32,10 @@ export default function Register() {
       if (data.user.role === "ShopOwner") navigate("/shop", { replace: true });
       else navigate("/customer", { replace: true });
     } catch (ex: unknown) {
-      const e = ex as { detail?: string; title?: string; errors?: Record<string, string[]>; raw?: unknown };
+      console.error("[Registration error]", ex);
+      const e = ex as { detail?: string; title?: string; errors?: Record<string, string[]>; raw?: unknown; message?: string };
       const raw = e.raw as Record<string, unknown> | undefined;
-      const msg = e.detail ?? e.title ?? (raw?.detail as string) ?? "Registration failed.";
+      const msg = e.detail ?? e.title ?? (raw?.detail as string) ?? e.message ?? (typeof ex === "string" ? ex : "Registration failed.");
       if (e.errors) {
         const first = Object.values(e.errors).flat()[0];
         setErr(first ?? msg);

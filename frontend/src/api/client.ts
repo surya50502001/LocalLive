@@ -1,4 +1,8 @@
-const API_BASE = import.meta.env.VITE_API_URL ?? "";
+const API_BASE = (import.meta.env.VITE_API_URL ?? "").trim();
+
+function isMissingApiUrl(): boolean {
+  return !API_BASE && typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
+}
 
 function buildUrl(path: string): string {
   if (!API_BASE) return path;
@@ -59,6 +63,14 @@ export interface ApiError {
 }
 
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+  if (isMissingApiUrl()) {
+    throw {
+      status: 0,
+      title: "Backend URL Not Configured",
+      detail: "Frontend environment variable VITE_API_URL is missing. Add VITE_API_URL in Render and redeploy the frontend.",
+    } as ApiError;
+  }
+
   const headers: Record<string, string> = { ...(init.headers as Record<string, string> | undefined) };
   const token = getAccessToken();
   if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -82,7 +94,14 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
 
   if (res.status === 204) return undefined as unknown as T;
   const text = await res.text();
-  const body: unknown = text ? JSON.parse(text) : null;
+  let body: unknown = null;
+  if (text) {
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = { detail: text.length > 250 ? `${text.slice(0, 250)}...` : text };
+    }
+  }
 
   if (!res.ok) {
     const err: ApiError = {
@@ -96,7 +115,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
       err.errors = (b.errors as Record<string, string[]>) ?? (b.Errors as Record<string, string[]>);
       if (!err.detail && !err.title) err.detail = text;
     } else {
-      err.detail = text;
+      err.detail = text || `HTTP ${res.status}: ${res.statusText}`;
     }
     throw err;
   }

@@ -178,10 +178,29 @@ builder.Services.AddCors(options =>
         }
         else
         {
-            policy.WithOrigins(corsOrigins)
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials();
+            policy.SetIsOriginAllowed(origin =>
+            {
+                if (string.IsNullOrEmpty(origin)) return false;
+                if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri)) return false;
+                if (corsOrigins.Any(o => string.Equals(o, origin, StringComparison.OrdinalIgnoreCase) ||
+                                         (Uri.TryCreate(o, UriKind.Absolute, out var configuredUri) &&
+                                          string.Equals(configuredUri.Host, uri.Host, StringComparison.OrdinalIgnoreCase))))
+                {
+                    return true;
+                }
+                if (uri.Host.EndsWith(".onrender.com", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                if (uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase) || uri.Host.Equals("127.0.0.1"))
+                {
+                    return true;
+                }
+                return false;
+            })
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
         }
     });
 });

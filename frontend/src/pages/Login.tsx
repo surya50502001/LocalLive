@@ -27,8 +27,10 @@ export default function Login() {
       else if (data.user.role === "ShopOwner") navigate("/shop", { replace: true });
       else navigate("/customer", { replace: true });
     } catch (ex: unknown) {
-      const e = ex as { detail?: string; title?: string };
-      const msg = e.detail ?? e.title ?? "Login failed. Check your credentials.";
+      console.error("[Login error]", ex);
+      const e = ex as { detail?: string; title?: string; raw?: unknown; message?: string };
+      const raw = e.raw as Record<string, unknown> | undefined;
+      const msg = e.detail ?? e.title ?? (raw?.detail as string) ?? e.message ?? (typeof ex === "string" ? ex : "Login failed. Check your credentials.");
       setErr(msg);
     } finally { setLoading(false); }
   };
