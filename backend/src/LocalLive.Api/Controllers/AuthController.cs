@@ -86,6 +86,30 @@ public class AuthController : ApiControllerBase
         return HandleResult(result);
     }
 
+    [HttpPut("profile")]
+    [Authorize]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+    {
+        var result = await _auth.UpdateProfileAsync(RequireUserId(), request);
+        return HandleResult(result);
+    }
+
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        var result = await _auth.ForgotPasswordAsync(request.Email);
+        return Ok(new { message = "If an account exists, a reset token has been generated.", token = result.Value });
+    }
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var result = await _auth.ResetPasswordAsync(request);
+        return HandleResult(result);
+    }
+
     private string? GetDevice()
         => Request.Headers.UserAgent.ToString();
 }

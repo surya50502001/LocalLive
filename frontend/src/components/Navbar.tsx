@@ -40,8 +40,10 @@ export function Navbar() {
             </>
           ) : (
             <>
-              <Link to="/customer" className="mini-button-primary px-3.5 py-1.5 text-xs text-white">Live Stream ⚡</Link>
-              <button onClick={handleLogout} className="mini-button-secondary px-3 py-1.5 text-xs text-slate-300">Log out</button>
+              <Link to="/customer" className="mini-button-primary px-3 py-1.5 text-xs text-white">Live Pool ⚡</Link>
+              <Link to="/customer/favorites" className="mini-button-secondary px-2.5 py-1.5 text-xs text-slate-200">⭐ Favorites</Link>
+              <Link to="/customer/profile" className="mini-button-secondary px-2.5 py-1.5 text-xs text-slate-200">👤 Profile</Link>
+              <button onClick={handleLogout} className="mini-button-secondary px-2.5 py-1.5 text-xs text-slate-300">Log out</button>
             </>
           )}
         </nav>

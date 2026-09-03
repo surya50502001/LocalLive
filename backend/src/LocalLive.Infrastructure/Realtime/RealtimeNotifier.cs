@@ -24,4 +24,13 @@ public class RealtimeNotifier : IRealtimeNotifier
 
     public Task NotifyShopRequestClosedAsync(Guid requestId)
         => _hub.Clients.All.RequestClosed(new { requestId, closed = true });
+
+    public Task NotifyNewChatMessageAsync(Guid conversationId, object messagePayload)
+        => _hub.Clients.Group($"conv:{conversationId}").NewChatMessage(messagePayload);
+
+    public Task NotifyUserTypingAsync(Guid conversationId, Guid userId, string userName)
+        => _hub.Clients.Group($"conv:{conversationId}").UserTyping(new { conversationId, userId, userName });
+
+    public Task NotifyMessagesReadAsync(Guid conversationId, Guid readByUserId)
+        => _hub.Clients.Group($"conv:{conversationId}").MessagesRead(new { conversationId, readByUserId });
 }

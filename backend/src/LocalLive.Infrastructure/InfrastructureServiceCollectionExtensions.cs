@@ -33,6 +33,7 @@ public static class InfrastructureServiceCollectionExtensions
         // Geo
         services.AddSingleton<IDistanceCalculator, HaversineDistanceCalculator>();
         services.AddSingleton<INavigationProvider, NavigationProvider>();
+        services.AddHttpClient<INavigationService, NavigationService>();
 
         // Auth
         services.AddScoped<IPasswordHasherService, PasswordHasherService>();
@@ -49,6 +50,8 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<IAdminService, AdminService>();
+        services.AddScoped<IChatService, ChatService>();
+        services.AddScoped<ISearchService, SearchService>();
 
         services.AddHostedService<RequestExpiryHostedService>();
 

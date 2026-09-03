@@ -67,6 +67,12 @@ public record UpdateShopStatusRequest
     public bool IsOpen { get; init; }
 }
 
+public record UpdateShopOnlineRequest
+{
+    [Required]
+    public bool IsOnline { get; init; }
+}
+
 public record ShopDto
 {
     public Guid Id { get; init; }
@@ -78,6 +84,7 @@ public record ShopDto
     public double Longitude { get; init; }
     public string? ImageUrl { get; init; }
     public bool IsOpen { get; init; }
+    public bool IsOnline { get; init; } = true;
     public string Status { get; init; } = string.Empty;
     public bool IsVerified { get; init; }
     public Guid OwnerUserId { get; init; }

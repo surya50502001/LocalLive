@@ -55,42 +55,65 @@ User 1 ─── * Notification         (recipient)
 
 All tables use `uuid` PKs (with `gen_random_uuid()`), `timestamp with time zone` timestamps, soft delete (`deleted_at`), audit fields (`created_at`, `updated_at`).
 
-- **users**: id, email (unique), phone (nullable), password_hash, full_name, role (customer|shop_owner|admin), is_blocked, blocked_at, is_verified, created_at, updated_at, deleted_at
+- **users**: id, email (unique), phone (nullable), password_hash, full_name, role (customer|shop_owner|admin), is_blocked, blocked_at, is_verified, password_reset_token, password_reset_expires_at, created_at, updated_at, deleted_at
 - **refresh_tokens**: id, user_id (FK), token (unique, hashed), expires_at, created_at, revoked_at, replaced_by_token_id
 - **categories**: id, name, slug (unique), icon, sort_order, is_active, created_at, updated_at, deleted_at
-- **shops**: id, owner_user_id (FK unique), name, description, phone, address, latitude, longitude (geolocation), is_verified, is_active, is_open, opening_hours (HoursOfOperation JSON), image_url, status (pending|approved|disabled), created_at, updated_at, deleted_at
+- **shops**: id, owner_user_id (FK unique), name, description, phone, address, latitude, longitude (geolocation), is_verified, is_open, is_online, opening_hours (HoursOfOperation JSON), image_url, status (pending|verified|disabled), created_at, updated_at, deleted_at
 - **shop_categories**: id, shop_id (FK), category_id (FK), UNIQUE(shop_id, category_id)
 - **live_requests**: id, customer_user_id (FK), category_id (FK), title, description, latitude, longitude, status (active|fulfilled|cancelled|expired), expires_at, created_at, updated_at, closed_at, deleted_at + indexes on status, (status, geometry), (customer, status)
 - **shop_requests**: id, request_id (FK), shop_id (FK), status (notified|responded|expired|fulfilled|cancelled), notified_at, responded_at, UNIQUE(request_id, shop_id)
 - **shop_responses**: id, request_id (FK), shop_id (FK), responder_user_id (FK), status (available), distance_m, message, created_at, UNIQUE(request_id, shop_id) — one response per shop per request
+- **conversations**: id, request_id (FK), customer_user_id (FK), shop_id (FK), last_message_at, is_closed, created_at, updated_at, deleted_at
+- **chat_messages**: id, conversation_id (FK), sender_user_id (FK), content, is_read, read_at, created_at
+- **favorite_shops**: id, customer_user_id (FK), shop_id (FK), created_at
+- **user_blocks**: id, blocker_user_id (FK), blocked_user_id (FK), reason, created_at
+- **shop_verifications**: id, shop_id (FK), document_type, document_url, business_registration_number, status, admin_notes, created_at
 - **notifications**: id, recipient_user_id (FK), type, title, body, payload (jsonb), is_read, read_at, created_at — index on (recipient, is_read)
 - **reports**: id, reporter_user_id (FK), target_type (shop|request), target_id (uuid), reason, created_at, status (open|resolved|dismissed), resolved_by_id, resolved_at
 - **admin_actions**: id, admin_user_id (FK), target_type, target_id, action, detail (jsonb), created_at
 
-Geo indexes: PostGIS optional; primary search uses `earthdistance`/`cube` or bounding-box filtering with radius computed in app. To keep the DB lightweight but real and production-grade, we enable the **`cube` + `earthdistance`** extensions for accurate radius search, and make the map/navigation provider pluggable.
+Geo indexes: PostGIS optional; primary search uses `earthdistance`/`cube` or bounding-box filtering with radius computed in app. Turn-by-turn navigation is 100% in-app via Leaflet and OSRM routing.
 
 ## 4. API Contract
 
 All JSON. Auth via JWT Bearer. Errors: `{ "type", "title", "status", "detail", "traceId", "errors" }`.
 
 ### Auth
-- `POST /api/auth/register` — body `{email, password, fullName, phone?}` → `{user, accessToken, refreshToken}` (returns role, and can auto-register as shop owner with `registerAs:` role)
-- `POST /api/auth/login` → `{user, accessToken, refreshToken}`
+- `POST /api/auth/register` — body `{email, password, fullName, phone?, registerAs?}` → `{user, tokens}`
+- `POST /api/auth/login` → `{user, tokens}`
 - `POST /api/auth/refresh` — `{refreshToken}` → new tokens
 - `POST /api/auth/logout` — revoke refresh token
-- `GET /api/auth/me`
+- `GET /api/auth/me` — current authenticated user
+- `PUT /api/auth/profile` — `{fullName, phone}` update profile
+- `POST /api/auth/forgot-password` — `{email}` generate reset token
+- `POST /api/auth/reset-password` — `{email, token, newPassword}` reset password
+
+### Navigation & In-App Routing (Zero External Redirects)
+- `GET /api/navigation/route?fromLat&fromLng&toLat&toLng&mode=walking|driving` — returns polyline coordinates, turn maneuvers, step-by-step instructions, distance, and duration.
+
+### Real-time Contextual Chat
+- `GET /api/chat/conversations` — user's active conversations
+- `GET /api/chat/request/{requestId}/shop/{shopId}` — get or create conversation for request
+- `GET /api/chat/conversations/{id}/messages?page=1&pageSize=50` — message history
+- `POST /api/chat/conversations/{id}/messages` — `{content}` send chat message
+- `POST /api/chat/conversations/{id}/read` — mark conversation messages read
+
+### Search & Discovery
+- `GET /api/search?q=...&latitude=...&longitude=...&radiusKm=15` — search categories and nearby verified open shops
 
 ### Categories
 - `GET /api/categories` — active categories
 
-### Shops (SHOP_OWNER)
+### Shops (SHOP_OWNER & CUSTOMER)
 - `POST /api/shops` — create shop
-- `GET /api/shops/{id}`
+- `GET /api/shops/{id}` — get shop details
 - `PUT /api/shops/{id}` — owner only
-- `PUT /api/shops/{id}/status` — `{isOpen}` OPEN/CLOSED (owner only)
+- `PUT /api/shops/{id}/status` — `{isOpen}` physical store status
+- `PUT /api/shops/{id}/online` — `{isOnline}` live dispatch toggle
 - `GET /api/shops/me` — my shop
 - `GET /api/shops/nearby?latitude&longitude&radiusKm&categoryId` — public, nearby OPEN + verified shops
-- `GET /api/shops/{id}/requests/live` — live requests targeted at my shop (owner)
+- `GET /api/shops/favorites` — customer's saved favorite shops
+- `POST /api/shops/{id}/favorite` — toggle favorite shop
 
 ### Requests (CUSTOMER)
 - `POST /api/requests` — `{title, description?, categoryId, latitude, longitude, ttlMinutes?}` → created + broadcast to shops

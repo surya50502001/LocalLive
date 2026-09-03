@@ -8,6 +8,7 @@ using LocalLive.Domain.Enums;
 using LocalLive.Infrastructure.Auth;
 using LocalLive.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace LocalLive.Infrastructure.Services;
@@ -18,17 +19,20 @@ public class AuthService : IAuthService
     private readonly IPasswordHasherService _passwordHasher;
     private readonly IJwtTokenService _jwt;
     private readonly JwtSettings _jwtSettings;
+    private readonly ILogger<AuthService> _logger;
 
     public AuthService(
         AppDbContext db,
         IPasswordHasherService passwordHasher,
         IJwtTokenService jwt,
-        IOptions<JwtSettings> jwtSettings)
+        IOptions<JwtSettings> jwtSettings,
+        ILogger<AuthService> logger)
     {
         _db = db;
         _passwordHasher = passwordHasher;
         _jwt = jwt;
         _jwtSettings = jwtSettings.Value;
+        _logger = logger;
     }
 
     public async Task<Result<AuthResultDto>> RegisterAsync(RegisterRequest request, string? ipAddress, string? deviceInfo)
@@ -187,6 +191,63 @@ public class AuthService : IAuthService
         {
             return Result<UserDto>.Failure(new Error(ErrorType.NotFound, "USER_NOT_FOUND", "User not found."));
         }
+        return Result<UserDto>.Success(MapUser(user));
+    }
+
+    public async Task<Result<string>> ForgotPasswordAsync(string email)
+    {
+        var user = await _db.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == email.Trim().ToLowerInvariant());
+
+        // Always return success to prevent email enumeration attacks
+        if (user is null)
+        {
+            return Result<string>.Success("If an account with this email exists, a password reset token has been generated.");
+        }
+
+        // Generate a 6-digit numeric reset token
+        var random = new Random();
+        var token = random.Next(100000, 999999).ToString();
+        user.PasswordResetToken = token;
+        user.PasswordResetExpiresAt = DateTime.UtcNow.AddMinutes(30);
+
+        await _db.SaveChangesAsync();
+
+        _logger.LogInformation("Password reset requested for {Email}. Token: {Token}", user.Email, token);
+
+        return Result<string>.Success(token);
+    }
+
+    public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        var user = await _db.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == request.Email.Trim().ToLowerInvariant());
+
+        if (user is null || user.PasswordResetToken != request.Token.Trim() || user.PasswordResetExpiresAt < DateTime.UtcNow)
+        {
+            return Result.Failure(new Error(ErrorType.Validation, "INVALID_TOKEN", "The reset token is invalid or has expired."));
+        }
+
+        user.PasswordHash = _passwordHasher.HashPassword(request.NewPassword);
+        user.PasswordResetToken = null;
+        user.PasswordResetExpiresAt = null;
+
+        await _db.SaveChangesAsync();
+        return Result.Success();
+    }
+
+    public async Task<Result<UserDto>> UpdateProfileAsync(Guid userId, UpdateProfileRequest request)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user is null)
+        {
+            return Result<UserDto>.Failure(new Error(ErrorType.NotFound, "USER_NOT_FOUND", "User not found."));
+        }
+
+        user.FullName = request.FullName.Trim();
+        user.Phone = string.IsNullOrWhiteSpace(request.Phone) ? null : NormalizePhone(request.Phone);
+
+        await _db.SaveChangesAsync();
         return Result<UserDto>.Success(MapUser(user));
     }
 

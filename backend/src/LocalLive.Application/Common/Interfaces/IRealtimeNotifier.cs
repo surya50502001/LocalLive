@@ -16,4 +16,13 @@ public interface IRealtimeNotifier
 
     /// <summary>Notify shop owners that a request was cancelled/expired so they can clear it.</summary>
     Task NotifyShopRequestClosedAsync(Guid requestId);
+
+    /// <summary>Notify participants of a new chat message in a conversation.</summary>
+    Task NotifyNewChatMessageAsync(Guid conversationId, object messagePayload);
+
+    /// <summary>Notify participants that a user is typing.</summary>
+    Task NotifyUserTypingAsync(Guid conversationId, Guid userId, string userName);
+
+    /// <summary>Notify participants that messages have been read.</summary>
+    Task NotifyMessagesReadAsync(Guid conversationId, Guid readByUserId);
 }

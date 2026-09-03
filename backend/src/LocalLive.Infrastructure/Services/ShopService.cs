@@ -164,6 +164,26 @@ public class ShopService : IShopService
         return Result<ShopDto>.Success(MapToDtoAsync(shop, null));
     }
 
+    public async Task<Result<ShopDto>> UpdateOnlineStatusAsync(Guid ownerUserId, Guid shopId, bool isOnline)
+    {
+        var shop = await LoadShopAsync(shopId);
+        if (shop is null)
+        {
+            return Result<ShopDto>.Failure(new Error(ErrorType.NotFound, "SHOP_NOT_FOUND", "Shop not found."));
+        }
+        if (shop.OwnerUserId != ownerUserId)
+        {
+            return Result<ShopDto>.Failure(new Error(
+                ErrorType.Forbidden, "FORBIDDEN", "You can only update your own shop's status."));
+        }
+
+        shop.IsOnline = isOnline;
+        shop.MarkUpdated();
+        await _db.SaveChangesAsync();
+
+        return Result<ShopDto>.Success(MapToDtoAsync(shop, null));
+    }
+
     public async Task<List<ShopDto>> GetNearbyAsync(NearbyShopQuery query)
     {
         var origin = new GeoPoint(query.Latitude, query.Longitude);
@@ -228,6 +248,7 @@ public class ShopService : IShopService
             Longitude = shop.Longitude,
             ImageUrl = shop.ImageUrl,
             IsOpen = shop.IsOpen,
+            IsOnline = shop.IsOnline,
             Status = shop.Status.ToString(),
             IsVerified = shop.Status == ShopStatus.Verified,
             OwnerUserId = shop.OwnerUserId,
@@ -244,5 +265,44 @@ public class ShopService : IShopService
                 ? navigation.BuildNavigationUrl(new GeoPoint(0, 0), destination, shop.Name)
                 : null
         };
+    }
+
+    public async Task<Result<bool>> ToggleFavoriteAsync(Guid customerUserId, Guid shopId)
+    {
+        var shop = await _db.Shops.FirstOrDefaultAsync(s => s.Id == shopId);
+        if (shop is null)
+        {
+            return Result<bool>.Failure(new Error(ErrorType.NotFound, "SHOP_NOT_FOUND", "Shop not found."));
+        }
+
+        var existing = await _db.FavoriteShops
+            .FirstOrDefaultAsync(f => f.CustomerUserId == customerUserId && f.ShopId == shopId);
+
+        if (existing is not null)
+        {
+            _db.FavoriteShops.Remove(existing);
+            await _db.SaveChangesAsync();
+            return Result<bool>.Success(false); // Removed from favorites
+        }
+
+        _db.FavoriteShops.Add(new FavoriteShop
+        {
+            CustomerUserId = customerUserId,
+            ShopId = shopId
+        });
+        await _db.SaveChangesAsync();
+        return Result<bool>.Success(true); // Added to favorites
+    }
+
+    public async Task<List<ShopDto>> GetFavoriteShopsAsync(Guid customerUserId)
+    {
+        var shops = await _db.FavoriteShops
+            .Include(f => f.Shop).ThenInclude(s => s!.ShopCategories).ThenInclude(sc => sc.Category)
+            .Where(f => f.CustomerUserId == customerUserId && f.Shop != null)
+            .OrderByDescending(f => f.CreatedAt)
+            .Select(f => f.Shop!)
+            .ToListAsync();
+
+        return shops.Select(s => MapToDtoAsync(s, null)).ToList();
     }
 }

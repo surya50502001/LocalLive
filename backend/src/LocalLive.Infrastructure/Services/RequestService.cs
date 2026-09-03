@@ -82,7 +82,7 @@ public class RequestService : IRequestService
             .AsNoTracking()
             .Include(s => s.ShopCategories)
             .Where(s => s.Status == ShopStatus.Verified)
-            .Where(s => s.IsOpen)
+            .Where(s => s.IsOpen && s.IsOnline)
             .Where(s => s.ShopCategories.Any(sc => sc.CategoryId == request.CategoryId))
             .ToListAsync();
 
@@ -446,6 +446,8 @@ public class RequestService : IRequestService
                 Description = sr.Shop.Description,
                 Address = sr.Shop.Address,
                 Phone = sr.Shop.Phone,
+                Latitude = sr.Shop.Latitude,
+                Longitude = sr.Shop.Longitude,
                 DistanceM = sr.DistanceM,
                 IsVerified = sr.Shop.Status == ShopStatus.Verified,
                 Message = sr.Message,

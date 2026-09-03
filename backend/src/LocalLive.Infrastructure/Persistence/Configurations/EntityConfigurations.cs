@@ -206,3 +206,131 @@ public class AdminActionConfiguration : IEntityTypeConfiguration<AdminAction>
         builder.Property(x => x.TargetType).HasConversion<string>().HasMaxLength(20);
     }
 }
+
+public class ConversationConfiguration : IEntityTypeConfiguration<Conversation>
+{
+    public void Configure(EntityTypeBuilder<Conversation> builder)
+    {
+        builder.ToTable("conversations");
+        builder.HasKey(x => x.Id);
+
+        builder.HasIndex(x => new { x.RequestId, x.ShopId }).IsUnique();
+        builder.HasIndex(x => x.CustomerUserId);
+        builder.HasIndex(x => x.ShopId);
+
+        builder.HasOne(x => x.Request)
+            .WithMany()
+            .HasForeignKey(x => x.RequestId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.CustomerUser)
+            .WithMany()
+            .HasForeignKey(x => x.CustomerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.Shop)
+            .WithMany(s => s.Conversations)
+            .HasForeignKey(x => x.ShopId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(x => x.Messages)
+            .WithOne(m => m.Conversation)
+            .HasForeignKey(m => m.ConversationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasQueryFilter(x => x.DeletedAt == null);
+    }
+}
+
+public class ChatMessageConfiguration : IEntityTypeConfiguration<ChatMessage>
+{
+    public void Configure(EntityTypeBuilder<ChatMessage> builder)
+    {
+        builder.ToTable("chat_messages");
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.Content).HasMaxLength(2000).IsRequired();
+        builder.HasIndex(x => new { x.ConversationId, x.CreatedAt });
+
+        builder.HasOne(x => x.SenderUser)
+            .WithMany()
+            .HasForeignKey(x => x.SenderUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasQueryFilter(x => x.DeletedAt == null);
+    }
+}
+
+public class FavoriteShopConfiguration : IEntityTypeConfiguration<FavoriteShop>
+{
+    public void Configure(EntityTypeBuilder<FavoriteShop> builder)
+    {
+        builder.ToTable("favorite_shops");
+        builder.HasKey(x => x.Id);
+
+        builder.HasIndex(x => new { x.CustomerUserId, x.ShopId }).IsUnique();
+
+        builder.HasOne(x => x.CustomerUser)
+            .WithMany(u => u.FavoriteShops)
+            .HasForeignKey(x => x.CustomerUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.Shop)
+            .WithMany()
+            .HasForeignKey(x => x.ShopId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasQueryFilter(x => x.DeletedAt == null);
+    }
+}
+
+public class UserBlockConfiguration : IEntityTypeConfiguration<UserBlock>
+{
+    public void Configure(EntityTypeBuilder<UserBlock> builder)
+    {
+        builder.ToTable("user_blocks");
+        builder.HasKey(x => x.Id);
+
+        builder.HasIndex(x => new { x.BlockerUserId, x.BlockedUserId }).IsUnique();
+        builder.Property(x => x.Reason).HasMaxLength(500);
+
+        builder.HasOne(x => x.BlockerUser)
+            .WithMany()
+            .HasForeignKey(x => x.BlockerUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.BlockedUser)
+            .WithMany()
+            .HasForeignKey(x => x.BlockedUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasQueryFilter(x => x.DeletedAt == null);
+    }
+}
+
+public class ShopVerificationConfiguration : IEntityTypeConfiguration<ShopVerification>
+{
+    public void Configure(EntityTypeBuilder<ShopVerification> builder)
+    {
+        builder.ToTable("shop_verifications");
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.DocumentType).HasMaxLength(100).IsRequired();
+        builder.Property(x => x.DocumentUrl).HasMaxLength(500).IsRequired();
+        builder.Property(x => x.BusinessRegistrationNumber).HasMaxLength(100);
+        builder.Property(x => x.AdminNotes).HasMaxLength(1000);
+        builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+
+        builder.HasOne(x => x.Shop)
+            .WithMany(s => s.Verifications)
+            .HasForeignKey(x => x.ShopId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.ReviewedByAdminUser)
+            .WithMany()
+            .HasForeignKey(x => x.ReviewedByAdminUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasQueryFilter(x => x.DeletedAt == null);
+    }
+}

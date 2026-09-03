@@ -106,6 +106,120 @@ namespace LocalLive.Infrastructure.Persistence.Migrations
                     b.ToTable("categories", (string)null);
                 });
 
+            modelBuilder.Entity("LocalLive.Domain.Entities.ChatMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("SenderUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SenderUserId");
+
+                    b.HasIndex("ConversationId", "CreatedAt");
+
+                    b.ToTable("chat_messages", (string)null);
+                });
+
+            modelBuilder.Entity("LocalLive.Domain.Entities.Conversation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CustomerUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("LastMessageAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ShopId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerUserId");
+
+                    b.HasIndex("ShopId");
+
+                    b.HasIndex("RequestId", "ShopId")
+                        .IsUnique();
+
+                    b.ToTable("conversations", (string)null);
+                });
+
+            modelBuilder.Entity("LocalLive.Domain.Entities.FavoriteShop", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CustomerUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ShopId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShopId");
+
+                    b.HasIndex("CustomerUserId", "ShopId")
+                        .IsUnique();
+
+                    b.ToTable("favorite_shops", (string)null);
+                });
+
             modelBuilder.Entity("LocalLive.Domain.Entities.LiveRequest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -374,6 +488,9 @@ namespace LocalLive.Infrastructure.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<bool>("IsOnline")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsOpen")
                         .HasColumnType("boolean");
 
@@ -541,6 +658,65 @@ namespace LocalLive.Infrastructure.Persistence.Migrations
                     b.ToTable("shop_responses", (string)null);
                 });
 
+            modelBuilder.Entity("LocalLive.Domain.Entities.ShopVerification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AdminNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("BusinessRegistrationNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DocumentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("DocumentUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReviewedByAdminUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ShopId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReviewedByAdminUserId");
+
+                    b.HasIndex("ShopId");
+
+                    b.ToTable("shop_verifications", (string)null);
+                });
+
             modelBuilder.Entity("LocalLive.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -580,6 +756,12 @@ namespace LocalLive.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("PasswordResetExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PasswordResetToken")
+                        .HasColumnType("text");
+
                     b.Property<string>("Phone")
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
@@ -600,6 +782,41 @@ namespace LocalLive.Infrastructure.Persistence.Migrations
                     b.ToTable("users", (string)null);
                 });
 
+            modelBuilder.Entity("LocalLive.Domain.Entities.UserBlock", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BlockedUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BlockerUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlockedUserId");
+
+                    b.HasIndex("BlockerUserId", "BlockedUserId")
+                        .IsUnique();
+
+                    b.ToTable("user_blocks", (string)null);
+                });
+
             modelBuilder.Entity("LocalLive.Domain.Entities.AdminAction", b =>
                 {
                     b.HasOne("LocalLive.Domain.Entities.User", "AdminUser")
@@ -609,6 +826,71 @@ namespace LocalLive.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("AdminUser");
+                });
+
+            modelBuilder.Entity("LocalLive.Domain.Entities.ChatMessage", b =>
+                {
+                    b.HasOne("LocalLive.Domain.Entities.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LocalLive.Domain.Entities.User", "SenderUser")
+                        .WithMany()
+                        .HasForeignKey("SenderUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("SenderUser");
+                });
+
+            modelBuilder.Entity("LocalLive.Domain.Entities.Conversation", b =>
+                {
+                    b.HasOne("LocalLive.Domain.Entities.User", "CustomerUser")
+                        .WithMany()
+                        .HasForeignKey("CustomerUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("LocalLive.Domain.Entities.LiveRequest", "Request")
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LocalLive.Domain.Entities.Shop", "Shop")
+                        .WithMany("Conversations")
+                        .HasForeignKey("ShopId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CustomerUser");
+
+                    b.Navigation("Request");
+
+                    b.Navigation("Shop");
+                });
+
+            modelBuilder.Entity("LocalLive.Domain.Entities.FavoriteShop", b =>
+                {
+                    b.HasOne("LocalLive.Domain.Entities.User", "CustomerUser")
+                        .WithMany("FavoriteShops")
+                        .HasForeignKey("CustomerUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LocalLive.Domain.Entities.Shop", "Shop")
+                        .WithMany()
+                        .HasForeignKey("ShopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CustomerUser");
+
+                    b.Navigation("Shop");
                 });
 
             modelBuilder.Entity("LocalLive.Domain.Entities.LiveRequest", b =>
@@ -757,9 +1039,51 @@ namespace LocalLive.Infrastructure.Persistence.Migrations
                     b.Navigation("ShopRequest");
                 });
 
+            modelBuilder.Entity("LocalLive.Domain.Entities.ShopVerification", b =>
+                {
+                    b.HasOne("LocalLive.Domain.Entities.User", "ReviewedByAdminUser")
+                        .WithMany()
+                        .HasForeignKey("ReviewedByAdminUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("LocalLive.Domain.Entities.Shop", "Shop")
+                        .WithMany("Verifications")
+                        .HasForeignKey("ShopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ReviewedByAdminUser");
+
+                    b.Navigation("Shop");
+                });
+
+            modelBuilder.Entity("LocalLive.Domain.Entities.UserBlock", b =>
+                {
+                    b.HasOne("LocalLive.Domain.Entities.User", "BlockedUser")
+                        .WithMany()
+                        .HasForeignKey("BlockedUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LocalLive.Domain.Entities.User", "BlockerUser")
+                        .WithMany()
+                        .HasForeignKey("BlockerUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BlockedUser");
+
+                    b.Navigation("BlockerUser");
+                });
+
             modelBuilder.Entity("LocalLive.Domain.Entities.Category", b =>
                 {
                     b.Navigation("ShopCategories");
+                });
+
+            modelBuilder.Entity("LocalLive.Domain.Entities.Conversation", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("LocalLive.Domain.Entities.LiveRequest", b =>
@@ -773,11 +1097,15 @@ namespace LocalLive.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("LocalLive.Domain.Entities.Shop", b =>
                 {
+                    b.Navigation("Conversations");
+
                     b.Navigation("ShopCategories");
 
                     b.Navigation("ShopRequests");
 
                     b.Navigation("ShopResponses");
+
+                    b.Navigation("Verifications");
                 });
 
             modelBuilder.Entity("LocalLive.Domain.Entities.ShopRequest", b =>
@@ -787,6 +1115,8 @@ namespace LocalLive.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("LocalLive.Domain.Entities.User", b =>
                 {
+                    b.Navigation("FavoriteShops");
+
                     b.Navigation("Notifications");
 
                     b.Navigation("OwnedShops");

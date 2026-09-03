@@ -39,6 +39,7 @@ export interface ShopDto {
   longitude: number;
   imageUrl?: string | null;
   isOpen: boolean;
+  isOnline: boolean;
   status: string;
   isVerified: boolean;
   ownerUserId: string;
@@ -69,6 +70,8 @@ export interface ShopAvailableDto {
   description?: string | null;
   address: string;
   phone: string;
+  latitude: number;
+  longitude: number;
   distanceM?: number | null;
   isVerified: boolean;
   navigationUrl?: string | null;

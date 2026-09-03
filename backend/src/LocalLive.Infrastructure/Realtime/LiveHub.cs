@@ -13,6 +13,9 @@ public interface ILiveClient
     Task ShopAvailable(object payload);
     Task RequestStatusChanged(object payload);
     Task RequestClosed(object payload);
+    Task NewChatMessage(object payload);
+    Task UserTyping(object payload);
+    Task MessagesRead(object payload);
 }
 
 [Authorize]
@@ -45,10 +48,6 @@ public class LiveHub : Hub<ILiveClient>
         await base.OnDisconnectedAsync(exception);
     }
 
-    /// <summary>
-    /// Called by a shop owner's client to join the realtime group for their shop.
-    /// Ownership is validated server-side so a shop owner can never join another shop's group.
-    /// </summary>
     public async Task JoinShop(Guid shopId)
     {
         var userId = GetUserId();
@@ -70,6 +69,40 @@ public class LiveHub : Hub<ILiveClient>
     public async Task LeaveShop(Guid shopId)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"shop:{shopId}");
+    }
+
+    public async Task JoinConversation(Guid conversationId)
+    {
+        var userId = GetUserId();
+        if (!userId.HasValue) return;
+
+        var allowed = await _db.Conversations.AnyAsync(c =>
+            c.Id == conversationId &&
+            (c.CustomerUserId == userId.Value || c.Shop!.OwnerUserId == userId.Value));
+
+        if (allowed || GetUserRole() == UserRole.Admin)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"conv:{conversationId}");
+        }
+    }
+
+    public async Task LeaveConversation(Guid conversationId)
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"conv:{conversationId}");
+    }
+
+    public async Task SendTyping(Guid conversationId)
+    {
+        var userId = GetUserId();
+        if (!userId.HasValue) return;
+
+        var name = Context.User?.FindFirstValue(ClaimTypes.Name) ?? "User";
+        await Clients.Group($"conv:{conversationId}").UserTyping(new
+        {
+            conversationId,
+            userId = userId.Value,
+            userName = name
+        });
     }
 
     private Guid? GetUserId()

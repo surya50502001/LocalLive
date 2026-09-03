@@ -53,6 +53,16 @@ export default function ShopDashboard() {
     finally { setToggling(false); }
   };
 
+  const toggleOnline = async () => {
+    if (!shop) return;
+    setToggling(true); setMsg(null);
+    try {
+      const updated = await apiFetch<ShopDto>(`/api/shops/${shop.id}/online`, { method: "PUT", body: JSON.stringify({ isOnline: !shop.isOnline }) });
+      setShop(updated);
+    } catch (ex: unknown) { setMsg((ex as { detail?: string })?.detail ?? "Failed to update online status."); }
+    finally { setToggling(false); }
+  };
+
   const createShop = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!catIds.length) { setErr("Select at least one category."); return; }
@@ -123,17 +133,26 @@ export default function ShopDashboard() {
               <p className="mt-1 text-xs text-gray-500">{shop.categories.map((c) => c.name).join(", ")}</p>
               <div className="mt-2 flex gap-2">
                 <Badge tone={shop.status === "Verified" ? "green" : shop.status === "Pending" ? "amber" : "red"}>{shop.status}</Badge>
-                <Badge tone={shop.isOpen ? "green" : "gray"}>{shop.isOpen ? "OPEN" : "CLOSED"}</Badge>
+                <Badge tone={shop.isOpen ? "green" : "gray"}>{shop.isOpen ? "STORE OPEN" : "STORE CLOSED"}</Badge>
+                <Badge tone={shop.isOnline ? "green" : "gray"}>{shop.isOnline ? "LIVE ONLINE" : "OFFLINE"}</Badge>
               </div>
               {shop.status !== "Verified" && <p className="mt-2 text-xs text-amber-700">Your shop is pending verification. An admin will verify it soon. Only verified OPEN shops receive LIVE requests.</p>}
             </div>
             {shop.imageUrl && <img src={shop.imageUrl} alt={shop.name} className="h-20 w-20 rounded-xl object-cover" />}
           </div>
-          <div className="mt-4 flex items-center gap-3">
-            <span className="text-sm font-medium">Shop is {shop.isOpen ? "OPEN — receiving requests" : "CLOSED — not receiving requests"}</span>
-            <Button onClick={toggleOpen} disabled={toggling} className={shop.isOpen ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"}>
-              {toggling ? "Updating…" : shop.isOpen ? "Set CLOSED" : "Set OPEN"}
-            </Button>
+          <div className="mt-4 flex flex-wrap items-center gap-3 pt-3 border-t border-gray-100">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-gray-700">Live Matching:</span>
+              <Button onClick={toggleOnline} disabled={toggling} className={shop.isOnline ? "bg-emerald-600 hover:bg-emerald-700 text-xs py-1.5" : "bg-gray-600 hover:bg-gray-700 text-xs py-1.5"}>
+                {toggling ? "…" : shop.isOnline ? "● ONLINE (Receiving Requests)" : "○ OFFLINE (Paused)"}
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-gray-700">Physical Store:</span>
+              <SecondaryButton onClick={toggleOpen} disabled={toggling} className="text-xs py-1.5">
+                {toggling ? "…" : shop.isOpen ? "Set Store Closed" : "Set Store Open"}
+              </SecondaryButton>
+            </div>
           </div>
           {msg && <p className="mt-2 text-sm text-amber-700">{msg}</p>}
         </Card>

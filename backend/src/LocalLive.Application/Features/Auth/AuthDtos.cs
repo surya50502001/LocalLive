@@ -57,3 +57,30 @@ public record AuthResultDto
     public UserDto User { get; init; } = null!;
     public TokenPairDto Tokens { get; init; } = null!;
 }
+
+public record ForgotPasswordRequest
+{
+    [Required, EmailAddress]
+    public string Email { get; init; } = string.Empty;
+}
+
+public record ResetPasswordRequest
+{
+    [Required, EmailAddress]
+    public string Email { get; init; } = string.Empty;
+
+    [Required]
+    public string Token { get; init; } = string.Empty;
+
+    [Required, MinLength(8), MaxLength(128)]
+    public string NewPassword { get; init; } = string.Empty;
+}
+
+public record UpdateProfileRequest
+{
+    [Required, MinLength(2), MaxLength(120)]
+    public string FullName { get; init; } = string.Empty;
+
+    [Phone, MaxLength(30)]
+    public string? Phone { get; init; }
+}

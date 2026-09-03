@@ -10,4 +10,7 @@ public interface IAuthService
     Task<Result<TokenPairDto>> RefreshAsync(string refreshToken, string? ipAddress, string? deviceInfo);
     Task<Result> LogoutAsync(string refreshToken);
     Task<Result<UserDto>> GetMeAsync(Guid userId);
+    Task<Result<string>> ForgotPasswordAsync(string email);
+    Task<Result> ResetPasswordAsync(ResetPasswordRequest request);
+    Task<Result<UserDto>> UpdateProfileAsync(Guid userId, UpdateProfileRequest request);
 }

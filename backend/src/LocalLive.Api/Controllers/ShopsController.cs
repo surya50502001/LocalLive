@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LocalLive.Api.Controllers;
 
 [Route("api/shops")]
-[Authorize(Roles = "ShopOwner")]
+[Authorize]
 public class ShopsController : ApiControllerBase
 {
     private readonly IShopService _service;
@@ -26,6 +26,7 @@ public class ShopsController : ApiControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "ShopOwner,Admin")]
     public async Task<IActionResult> Create([FromBody] CreateShopRequest request)
     {
         var validation = await _createValidator.ValidateAsync(request);
@@ -37,6 +38,7 @@ public class ShopsController : ApiControllerBase
     }
 
     [HttpGet("me")]
+    [Authorize(Roles = "ShopOwner,Admin")]
     public async Task<IActionResult> MyShop()
         => HandleResult(await _service.GetMyShopAsync(RequireUserId()));
 
@@ -51,12 +53,21 @@ public class ShopsController : ApiControllerBase
             CategoryId = categoryId
         }));
 
+    [HttpGet("favorites")]
+    public async Task<IActionResult> GetFavorites()
+        => Ok(await _service.GetFavoriteShopsAsync(RequireUserId()));
+
+    [HttpPost("{id:guid}/favorite")]
+    public async Task<IActionResult> ToggleFavorite(Guid id)
+        => HandleResult(await _service.ToggleFavoriteAsync(RequireUserId(), id));
+
     [HttpGet("{id:guid}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetById(Guid id)
         => HandleResult(await _service.GetByIdAsync(id));
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "ShopOwner,Admin")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateShopRequest request)
     {
         var validation = await _updateValidator.ValidateAsync(request);
@@ -68,6 +79,12 @@ public class ShopsController : ApiControllerBase
     }
 
     [HttpPut("{id:guid}/status")]
+    [Authorize(Roles = "ShopOwner,Admin")]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateShopStatusRequest request)
         => HandleResult(await _service.UpdateStatusAsync(RequireUserId(), id, request.IsOpen));
+
+    [HttpPut("{id:guid}/online")]
+    [Authorize(Roles = "ShopOwner,Admin")]
+    public async Task<IActionResult> UpdateOnline(Guid id, [FromBody] UpdateShopOnlineRequest request)
+        => HandleResult(await _service.UpdateOnlineStatusAsync(RequireUserId(), id, request.IsOnline));
 }

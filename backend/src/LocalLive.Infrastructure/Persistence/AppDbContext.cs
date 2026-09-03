@@ -18,6 +18,11 @@ public class AppDbContext : DbContext
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<Report> Reports => Set<Report>();
     public DbSet<AdminAction> AdminActions => Set<AdminAction>();
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+    public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
+    public DbSet<FavoriteShop> FavoriteShops => Set<FavoriteShop>();
+    public DbSet<UserBlock> UserBlocks => Set<UserBlock>();
+    public DbSet<ShopVerification> ShopVerifications => Set<ShopVerification>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -17,7 +17,8 @@ public class Shop : BaseEntity
     public double Longitude { get; set; }
     public string? ImageUrl { get; set; }
 
-    public bool IsOpen { get; set; }
+    public bool IsOpen { get; set; } = true;
+    public bool IsOnline { get; set; } = true;
     public ShopStatus Status { get; set; } = ShopStatus.Pending;
 
     public HoursOfOperation? Hours { get; set; }
@@ -25,4 +26,6 @@ public class Shop : BaseEntity
     public ICollection<ShopCategory> ShopCategories { get; set; } = new List<ShopCategory>();
     public ICollection<ShopRequest> ShopRequests { get; set; } = new List<ShopRequest>();
     public ICollection<ShopResponse> ShopResponses { get; set; } = new List<ShopResponse>();
+    public ICollection<Conversation> Conversations { get; set; } = new List<Conversation>();
+    public ICollection<ShopVerification> Verifications { get; set; } = new List<ShopVerification>();
 }

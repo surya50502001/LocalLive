@@ -16,6 +16,9 @@ public interface IShopService
     Task<Result<ShopDto>> GetMyShopAsync(Guid ownerUserId);
     Task<Result<ShopDto>> UpdateAsync(Guid ownerUserId, Guid shopId, UpdateShopRequest request);
     Task<Result<ShopDto>> UpdateStatusAsync(Guid ownerUserId, Guid shopId, bool isOpen);
+    Task<Result<ShopDto>> UpdateOnlineStatusAsync(Guid ownerUserId, Guid shopId, bool isOnline);
     Task<List<ShopDto>> GetNearbyAsync(NearbyShopQuery query);
     Task<Result<Guid>> GetShopIdForOwnerAsync(Guid ownerUserId);
+    Task<Result<bool>> ToggleFavoriteAsync(Guid customerUserId, Guid shopId);
+    Task<List<ShopDto>> GetFavoriteShopsAsync(Guid customerUserId);
 }

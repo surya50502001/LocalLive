@@ -16,8 +16,12 @@ public class User : BaseEntity
     public DateTime? BlockedAt { get; set; }
     public string? BlockReason { get; set; }
 
+    public string? PasswordResetToken { get; set; }
+    public DateTime? PasswordResetExpiresAt { get; set; }
+
     public ICollection<Shop> OwnedShops { get; set; } = new List<Shop>();
     public ICollection<LiveRequest> Requests { get; set; } = new List<LiveRequest>();
     public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+    public ICollection<FavoriteShop> FavoriteShops { get; set; } = new List<FavoriteShop>();
 }

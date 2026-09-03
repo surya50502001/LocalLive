@@ -6,9 +6,12 @@ import { RequireAuth, RedirectIfAuthed } from "./components/Guards";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 import CustomerHome from "./pages/customer/Home";
 import RequestLive from "./pages/customer/RequestLive";
 import MyRequests from "./pages/customer/MyRequests";
+import CustomerProfile from "./pages/customer/Profile";
+import CustomerFavorites from "./pages/customer/Favorites";
 import ShopDashboard from "./pages/shop/Dashboard";
 import ShopRequests from "./pages/shop/Requests";
 import AdminPanel from "./pages/admin/Panel";
@@ -25,10 +28,13 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<RedirectIfAuthed><Login /></RedirectIfAuthed>} />
           <Route path="/register" element={<RedirectIfAuthed><Register /></RedirectIfAuthed>} />
+          <Route path="/forgot-password" element={<RedirectIfAuthed><ForgotPassword /></RedirectIfAuthed>} />
 
           <Route path="/customer" element={<RequireAuth roles={["Customer"]}><CustomerHome /></RequireAuth>} />
           <Route path="/customer/requests" element={<RequireAuth roles={["Customer"]}><MyRequests /></RequireAuth>} />
           <Route path="/customer/requests/:id" element={<RequireAuth roles={["Customer"]}><RequestLive /></RequireAuth>} />
+          <Route path="/customer/profile" element={<RequireAuth roles={["Customer", "ShopOwner", "Admin"]}><CustomerProfile /></RequireAuth>} />
+          <Route path="/customer/favorites" element={<RequireAuth roles={["Customer"]}><CustomerFavorites /></RequireAuth>} />
 
           <Route path="/shop" element={<RequireAuth roles={["ShopOwner"]}><ShopDashboard /></RequireAuth>} />
           <Route path="/shop/requests" element={<RequireAuth roles={["ShopOwner"]}><ShopRequests /></RequireAuth>} />

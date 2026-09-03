@@ -47,6 +47,8 @@ public record ShopAvailableDto
     public string? Description { get; init; }
     public string Address { get; init; } = string.Empty;
     public string Phone { get; init; } = string.Empty;
+    public double Latitude { get; init; }
+    public double Longitude { get; init; }
     public double? DistanceM { get; init; }
     public bool IsVerified { get; init; }
     public string? NavigationUrl { get; init; }
