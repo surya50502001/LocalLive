@@ -15,5 +15,6 @@ RUN dotnet publish "LocalLive.Api.csproj" -c Release -o /app/publish /p:UseAppHo
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 EXPOSE 8080
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "LocalLive.Api.dll"]
