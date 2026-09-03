@@ -144,8 +144,27 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // --- CORS ---
-var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? new[] { "http://localhost:5173" };
+var corsOriginsList = new List<string>();
+var configuredOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+if (configuredOrigins != null)
+{
+    corsOriginsList.AddRange(configuredOrigins);
+}
+var extraOrigins = builder.Configuration["CORS_ALLOWED_ORIGINS"] ?? builder.Configuration["WEB_ORIGIN"];
+if (!string.IsNullOrWhiteSpace(extraOrigins))
+{
+    corsOriginsList.AddRange(extraOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+}
+var corsOrigins = corsOriginsList
+    .Where(s => !string.IsNullOrWhiteSpace(s))
+    .Select(s => s.Trim().TrimEnd('/'))
+    .Distinct()
+    .ToArray();
+if (corsOrigins.Length == 0)
+{
+    corsOrigins = new[] { "http://localhost:5173" };
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
