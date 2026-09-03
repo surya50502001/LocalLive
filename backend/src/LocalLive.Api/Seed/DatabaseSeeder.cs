@@ -40,15 +40,24 @@ public static class DatabaseSeeder
 
     private static async Task EnsureAdminUserAsync(AppDbContext db, IConfiguration? configuration)
     {
-        var adminEmail = configuration?.GetValue<string>("Admin:Email") ?? "admin@locallive.app";
-        var adminPassword = configuration?.GetValue<string>("Admin:Password") ?? "Admin123!";
+        var adminEmail = configuration?.GetValue<string>("Admin:Email");
+        if (string.IsNullOrWhiteSpace(adminEmail))
+        {
+            adminEmail = "admin@locallive.app";
+        }
+
+        var adminPassword = configuration?.GetValue<string>("Admin:Password");
+        if (string.IsNullOrWhiteSpace(adminPassword))
+        {
+            adminPassword = "Admin123!";
+        }
 
         var existingAdmin = await db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Email == adminEmail);
         var hasher = new PasswordHasherService();
 
         if (existingAdmin is not null)
         {
-            // Reset password to Admin123! to ensure user can log in
+            // Reset password to ensure admin can log in
             existingAdmin.PasswordHash = hasher.HashPassword(adminPassword);
             existingAdmin.Role = UserRole.Admin;
             existingAdmin.IsVerified = true;
